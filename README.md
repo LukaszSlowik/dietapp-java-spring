@@ -1,5 +1,8 @@
 # DietApp - Personalized Nutrition & Health Tracking Assistant
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 ## Description
 
 **DietApp** is an application designed to help people track their nutrition, calculate enzyme (Kreon) needs based on the fat content of meals, and support people with conditions like cystic fibrosis or diabetes. The app allows users to select meals, save them, and convert common kitchen units (such as teaspoons, tablespoons, cups, etc.) into grams for accurate calculations.
