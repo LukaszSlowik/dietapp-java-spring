@@ -1,0 +1,17 @@
+[
+  {
+    "productId": 100,
+    "unitType": "GLASS",
+    "amount": 1.5
+  },
+  {
+    "productId": 101,
+    "unitType": "PIECE",
+    "amount": 2
+  },
+  {
+    "productId": 102,
+    "unitType": "GRAM",
+    "amount": 500
+  }
+]

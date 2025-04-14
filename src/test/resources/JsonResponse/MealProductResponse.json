@@ -1,0 +1,42 @@
+{
+  "mealId": 123,
+  "mealDate": "2025-04-14T08:00:00Z",
+  "products": [
+    {
+      "productId": 1,
+      "name": "Sok jabłkowy",
+      "unitType": "GLASS",
+      "amount": 1.0,
+      "grams": 200,
+      "nutrition": {
+        "fat": 0.2,
+        "carbs": 20,
+        "protein": 0.1,
+        "kcal": 80,
+        "glycemicIndex": 55
+      }
+    },
+    {
+      "productId": 2,
+      "name": "Jabłko",
+      "unitType": "PIECE",
+      "amount": 1.0,
+      "grams": 180,
+      "nutrition": {
+        "fat": 0.1,
+        "carbs": 25,
+        "protein": 0.2,
+        "kcal": 90,
+        "glycemicIndex": 38
+      }
+    }
+  ],
+  "nutrition": {
+    "fat": 0.3,
+    "carbs": 45,
+    "protein": 0.3,
+    "kcal": 170,
+    "glycemicIndexAvg": 46.5
+  },
+  "message": "Meal successfully created with 2 products."
+}
