@@ -15,7 +15,7 @@ import java.util.List;
 public interface ProductService {
     List<ProductCreateResponse> createProduct(List<ProductCreateRequest> requests);
     Page<ProductBasicInfoResponse> getProducts(ProductFilter productFilter, Pageable pageable, String path);
-   // Page<ProductBasicInfoResponse> getFilteredProducts(String name, Scope scope, Long userId, Pageable pageable);
+
     }
 
 

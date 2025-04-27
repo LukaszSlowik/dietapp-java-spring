@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,8 +32,10 @@ public class ProductEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Scope scope;
-    private Double kcalPer100g;
-    private Double fatPer100g;
+    private BigDecimal kcalPer100g;
+    private BigDecimal fatPer100g;
+    private BigDecimal carbsPer100g;
+    private BigDecimal proteinPer100g;
 
     @ManyToMany
     @JoinTable(

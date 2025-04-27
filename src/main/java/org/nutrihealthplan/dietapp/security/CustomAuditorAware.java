@@ -2,6 +2,7 @@ package org.nutrihealthplan.dietapp.security;
 
 
 
+import jakarta.annotation.Nullable;
 import org.nutrihealthplan.dietapp.model.UserEntity;
 import org.nutrihealthplan.dietapp.repository.UserRepository;
 import org.slf4j.Logger;

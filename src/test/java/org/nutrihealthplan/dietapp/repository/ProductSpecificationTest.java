@@ -1,62 +1,48 @@
 package org.nutrihealthplan.dietapp.repository;
 
 import org.junit.jupiter.api.Test;
-import org.nutrihealthplan.dietapp.dto.ProductsGetResponse;
+import org.nutrihealthplan.dietapp.dto.filter.ProductFilter;
 import org.nutrihealthplan.dietapp.model.ProductEntity;
 import org.nutrihealthplan.dietapp.model.enums.MatchType;
 import org.nutrihealthplan.dietapp.model.enums.Scope;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@Transactional
+@DataJpaTest
+@ActiveProfiles("test") //to use inMemory base
+@Sql(scripts = "/sql/test-products-contains.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 public class ProductSpecificationTest {
 
     @Autowired
     private ProductRepository productRepository;
 
-    @Sql(scripts = "/sql/test-products-contains.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    //@Sql(scripts = "/sql/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    @Test
-    void testContainsName(){
-//        ProductEntity product1 = ProductEntity.builder()
-//                .name("Sok jabłkowy")
-//                .scope(Scope.GLOBAL)
-//                .build();
-//
-//        ProductEntity product2 = ProductEntity.builder()
-//                .name("masło")
-//                .scope(Scope.GLOBAL)
-//                .build();
-//
-//        ProductEntity product3 = ProductEntity.builder()
-//                .name("Sok marchewkowy")
-//                .scope(Scope.GLOBAL)
-//                .build();
-//
-//        ProductEntity product4 = ProductEntity.builder()
-//                .name("Ser")
-//                .scope(Scope.GLOBAL)
-//                .build();
-//
-//        ProductEntity product5 = ProductEntity.builder()
-//                .name("jabłecznik")
-//                .scope(Scope.GLOBAL)
-//                .build();
-//      productRepository.saveAll(List.of(product1,product2,product3,product4,product5));
-        Specification<ProductEntity> spec = ProductSpecifications.nameMatches("jab", MatchType.CONTAINS);
-        List<ProductEntity> results = productRepository.findAll(spec);
-
-        assertEquals(2, results.size());
+    @ParameterizedTest
+    @CsvSource({
+            "abl,            CONTAINS,     2",
+            "jablko,         EQUAL,        1",
+            "jab,            STARTS_WITH,  1",
+            "ko,             ENDS_WITH,    1",
+            "notexist,       CONTAINS,     0"
+    })
+    void testProductNameMatching(String name, MatchType matchType, int expectedSize) {
+        ProductFilter filter = new ProductFilter();
+        filter.setName(name);
+        filter.setNameMatchType(matchType);
+        List<ProductEntity> results = productRepository.findAll(ProductSpecifications.buildFromFilter(filter));
+        assertEquals(expectedSize, results.size());
     }
 
+    @Test
+    void testScopeFilter() {
+        ProductFilter filter = new ProductFilter();
+        filter.setScope(Scope.PRIVATE);
+        List<ProductEntity> results = productRepository.findAll(ProductSpecifications.buildFromFilter(filter));
+        assertEquals(1, results.size());
+    }
 }

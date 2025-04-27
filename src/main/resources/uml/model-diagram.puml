@@ -1,0 +1,81 @@
+@startuml
+
+' Enums
+enum UnitType {
+  PIECE
+  CUP
+  TABLESPOON
+  TEASPOON
+  MUG
+  HANDFUL
+}
+
+enum Scope {
+  PRIVATE
+  SHARED
+  GLOBAL
+  REGIONAL
+  TEMPLATE
+  SYSTEM
+  ARCHIVED
+  PENDING
+  EXPIRED
+  LIMITED
+}
+
+enum Role {
+  DIETETICIAN
+  PATIENT
+  CHILD
+  ADMIN
+  USER
+}
+
+' Entities
+class MealProductEntity {
+  Long id
+  UnitType unitType
+  BigDecimal quantity
+  BigDecimal weightInGrams
+  Integer mealNumber
+  LocalDate mealDate
+  Instant createdDate
+  Instant modifiedDate
+}
+
+class ProductEntity {
+  Long id
+  String name
+  Scope scope
+  BigDecimal kcalPer100g
+  BigDecimal fatPer100g
+  String nameAndScope
+  Instant createdDate
+  Instant modifiedDate
+}
+
+class ProductUnitEntity {
+  Long id
+  UnitType unitType
+  BigDecimal gramsPerUnit
+}
+
+class UserEntity {
+  Long id
+  String username
+  String email
+  String password
+  Role role
+}
+
+' Relationships
+MealProductEntity --> ProductEntity : product
+MealProductEntity --> UserEntity : owner\n(createdBy,\nmodifiedBy)
+ProductUnitEntity --> ProductEntity : product
+ProductEntity --> "0..*" MealProductEntity : productSelectionEntities
+ProductEntity --> "0..*" ProductUnitEntity : productUnitEntities
+ProductEntity --> UserEntity : owner\n(createdBy,\nmodifiedBy)
+ProductEntity --> "0..*" UserEntity : ownerGroup
+UserEntity --> "0..*" MealProductEntity : productSelectionEntities
+
+@enduml

@@ -9,9 +9,11 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -41,13 +43,16 @@ public class MealProductEntity {
     private UnitType unitType;
 
     @Column(nullable = false)
-    private Double quantity;
+    private BigDecimal amount;
 
     @Column(nullable = false)
-    private Double weightInGrams;
+    private BigDecimal grams;
 
     @Column(nullable = false)
     private Integer mealNumber;
+
+    @Column(nullable = false)
+    private UUID mealId;
     @Column(nullable = false)
     private LocalDate mealDate;
 

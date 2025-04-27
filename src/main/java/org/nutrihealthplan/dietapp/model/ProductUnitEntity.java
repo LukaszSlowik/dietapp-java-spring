@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.nutrihealthplan.dietapp.model.enums.UnitType;
 
+import java.math.BigDecimal;
+
 @Entity
 @Getter
 @Setter
@@ -25,5 +27,5 @@ public class ProductUnitEntity {
     private ProductEntity product;
     @Positive
     @Column(nullable = false)
-    private Double gramsPerUnit;
+    private BigDecimal gramsPerUnit;
 }

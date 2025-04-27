@@ -1,0 +1,21 @@
+{
+  "ownerId": 1,
+  "mealDate": "2025-04-18",
+  "products": [
+    {
+      "productId": 101,
+      "unitType": "PIECE",
+      "amount": 2.5
+    },
+    {
+      "productId": 102,
+      "unitType": "CUP",
+      "amount": 1.0
+    },
+    {
+      "productId": 103,
+      "unitType": "TABLESPOON",
+      "amount": 3.0
+    }
+  ]
+}

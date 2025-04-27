@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -40,23 +41,26 @@ public class ProductServiceImpl implements ProductService {
         try {
 
             Scope scope = request.getScope() != null ? request.getScope() : Scope.PRIVATE;
-            UserEntity owner = auditorAware.getCurrentAuditor()
-                    .orElseThrow(()->
-                            new IllegalStateException("No authenticated user found"));
+            Optional<UserEntity> owner = auditorAware.getCurrentAuditor();
+            if(owner.isEmpty())
+            {
+                            throw new IllegalStateException("No authenticated user found");
+            }
+
 
             ProductEntity productToCreate = ProductEntity.builder()
                     .name(request.getName())
                     .kcalPer100g(request.getKcalPer100g())
                     .fatPer100g(request.getFatPer100g())
                     .scope(scope)
-                    .owner(owner)
+                    .owner(owner.get())
                     .build();
 
             if(request.getUnits() !=null){
                 List<ProductUnitEntity> productUnitEntities = new ArrayList<>();
                 for (UnitInfo unitRequest : request.getUnits()) {
                     ProductUnitEntity  unitEntity = ProductUnitEntity.builder()
-                            .unitType(UnitType.valueOf(unitRequest.getType()))
+                            .unitType(unitRequest.getType())
                             .gramsPerUnit(unitRequest.getGrams())
                             .product(productToCreate)
                             .build();

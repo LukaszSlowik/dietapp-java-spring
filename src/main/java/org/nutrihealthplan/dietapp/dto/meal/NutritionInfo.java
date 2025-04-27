@@ -1,7 +1,11 @@
 package org.nutrihealthplan.dietapp.dto.meal;
 
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+import java.math.BigDecimal;
+@AllArgsConstructor
+@Data
 public class NutritionInfo {
     private BigDecimal kcal;
     private BigDecimal carbs;

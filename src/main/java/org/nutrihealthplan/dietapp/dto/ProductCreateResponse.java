@@ -13,5 +13,5 @@ import org.nutrihealthplan.dietapp.model.enums.Scope;
 public class ProductCreateResponse {
     private Long id;
     private String name;
-    private String scope;
+    private Scope scope;
 }

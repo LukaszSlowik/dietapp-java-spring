@@ -15,19 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<ProductEntity,Long>, JpaSpecificationExecutor<ProductEntity> {
-//    @Query("SELECT p FROM ProductEntity p LEFT JOIN FETCH p.productUnitEntities WHERE p.id = :id")
-//    Optional<ProductEntity> findByIdWithUnits(@Param("id") Long id);
-//    @Query(
-//            value = """
-//        SELECT p FROM ProductEntity p
-//        LEFT JOIN FETCH p.productUnitEntities
-//        """,
-//            countQuery = """
-//        SELECT COUNT(p) FROM ProductEntity p
-//        """
-//    )
-//
-//    Page<ProductEntity> findAllWithUnits(Pageable pageable);
+
     @EntityGraph(attributePaths = {"productUnitEntities"})
     Page<ProductEntity> findAll(Pageable pageable);
     List<ProductEntity> findByOwnerIdAndScope(Long ownerId, Scope scope);

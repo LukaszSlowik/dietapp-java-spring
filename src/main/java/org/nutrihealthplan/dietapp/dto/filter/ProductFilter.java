@@ -13,9 +13,7 @@ public class ProductFilter {
     private String name;
     private MatchType nameMatchType;
     private Scope scope;
+    private Long ownerId;
     private Long userId;
-    private Boolean available;
-    private Double priceFrom;
-    private Double priceTo;
 
 }

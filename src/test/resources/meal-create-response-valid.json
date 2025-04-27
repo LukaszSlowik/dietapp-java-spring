@@ -1,0 +1,45 @@
+{
+  "mealId": "f87a8876-57d8-4c79-9e56-11d7b6c5c82e",
+  "mealNumber": 1,
+  "mealDate": "2025-04-18",
+  "products": [
+    {
+      "mealId": "f87a8876-57d8-4c79-9e56-11d7b6c5c82e",
+      "mealDate": "2025-04-18",
+      "productId": 101,
+      "productName": "Apple",
+      "unitType": "PIECE",
+      "amount": 2.5,
+      "grams": 250.0,
+      "nutrition": {
+        "kcal": 52,
+        "protein": 0.3,
+        "fat": 0.2,
+        "carbs": 14
+      }
+    },
+    {
+      "mealId": "f87a8876-57d8-4c79-9e56-11d7b6c5c82e",
+      "mealDate": "2025-04-18",
+      "productId": 102,
+      "productName": "Milk",
+      "unitType": "CUP",
+      "amount": 1.0,
+      "grams": 200.0,
+      "nutrition": {
+        "kcal": 150,
+        "protein": 8.0,
+        "fat": 8.0,
+        "carbs": 12.0
+      }
+    }
+  ],
+  "nutrition": {
+    "kcal": 202,
+    "protein": 8.3,
+    "fat": 8.2,
+    "carbs": 26
+  },
+  "message": "Meal created successfully",
+  "ownerId": 1
+}

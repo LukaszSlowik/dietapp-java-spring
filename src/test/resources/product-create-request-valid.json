@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Chicken Breast",
+    "kcalPer100g": 165.00,
+    "proteinPer100g": 31.00,
+    "carbsPer100g": 0.00,
+    "fatPer100g": 3.60,
+    "units": [
+      {
+        "type": "CUP",
+        "grams": 1
+      },
+      {
+        "type": "PIECE",
+        "grams": 200
+      }
+    ],
+    "scope": "PRIVATE"
+  }]
