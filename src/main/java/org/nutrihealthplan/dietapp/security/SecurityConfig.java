@@ -54,20 +54,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        JdbcUserDetailsManager userDetailsManager = new JdbcUserDetailsManager(dataSource);
-//
-//        userDetailsManager.setUsersByUsernameQuery(
-//                "SELECT email AS username, password, true AS enabled FROM user_entity WHERE email = ?"
-//        );
-//
-//        userDetailsManager.setAuthoritiesByUsernameQuery(
-//                "SELECT email AS username, CONCAT('ROLE_', role) AS authority FROM user_entity WHERE email = ?"
-//        );
-//
-//        return userDetailsManager;
-//    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

@@ -1,21 +1,19 @@
 package org.nutrihealthplan.dietapp.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.nutrihealthplan.dietapp.model.RefreshTokenEntity;
 import org.nutrihealthplan.dietapp.model.ResponseApi;
 import org.nutrihealthplan.dietapp.model.ResponseApiFactory;
-import org.nutrihealthplan.dietapp.repository.RefreshTokenRepository;
+import org.nutrihealthplan.dietapp.service.RefreshTokenService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import io.jsonwebtoken.JwtException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,74 +23,123 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
-    private final RefreshTokenRepository refreshTokenRepository;
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        log.debug("AuthTokenFilter called for URI: {} ", request.getRequestURI());
+        log.debug("AuthTokenFilter called for URI: {}", request.getRequestURI());
+
         String path = request.getRequestURI();
+        String jwt = parseJwt(request);
+
         try {
-            String jwt = parseJwt(request);
-
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
-
-                //refresh token
-                Optional<RefreshTokenEntity> refreshTokenEntityOptional = refreshTokenRepository.findById(username);
-                if (refreshTokenEntityOptional.isEmpty()) {
-                    log.warn("No refresh token found for user: {}", username);
-                    ResponseApi<Object> errorResponse = ResponseApiFactory.error(
-                            "401", "Invalid or expired refresh token", path);
-
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-                    return;
-                }
-                //
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-                log.debug("Roles from JWT: {}", userDetails.getAuthorities());
-                log.debug("User authenticated successfully: {}", username);
-
+            if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {
+                log.warn("No valid JWT token found in request");
+                sendErrorResponse(response, "Invalid or missing JWT token", request.getRequestURI());
+                return;
             }
+
+            String username = jwtUtils.getUserNameFromJwtToken(jwt);
+            authenticateUser(username, request);
+            filterChain.doFilter(request, response);
+
+        } catch (ExpiredJwtException e) {
+            handleExpiredAccessToken(request, response, filterChain, path);
         } catch (JwtException | UsernameNotFoundException e) {
-            log.warn("Authentication failed due to JWT/User issue: {}", e.getMessage());
+            log.warn("Authentication failed: {}", e.getMessage());
             log.debug("Stacktrace:", e);
-
-            ResponseApi<Object> errorResponse = ResponseApiFactory.error(
-                    "401",
-                    "Invalid or expired JWT token", path);
-
-
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
-            return;
+            sendErrorResponse(response, "Invalid or expired JWT token", path);
         } catch (RuntimeException e) {
             log.error("Unexpected exception in AuthTokenFilter", e);
             throw e;
         }
+    }
+
+    private void handleExpiredAccessToken(HttpServletRequest request,
+                                          HttpServletResponse response,
+                                          FilterChain filterChain,
+                                          String path) throws IOException, ServletException {
+        String refreshToken = extractRefreshTokenFromCookies(request);
+
+        if (refreshToken == null || !jwtUtils.validateJwtToken(refreshToken)) {
+            log.warn("Invalid or missing refresh token");
+            sendErrorResponse(response, "Invalid or missing refresh token", path);
+            return;
+        }
+
+        String username = jwtUtils.getUserNameFromJwtToken(refreshToken);
+        String storedRefreshToken = refreshTokenService.getRefreshToken(username);
+
+        if (storedRefreshToken == null) {
+            log.error("No refresh token found for user: {}", username);
+            sendErrorResponse(response, "Invalid or missing refresh token", path);
+            return;
+        }
+
+        if (!refreshToken.equals(storedRefreshToken)) {
+            log.warn("Refresh token mismatch for user: {}", username);
+            sendErrorResponse(response, "Refresh token mismatch", path);
+            return;
+        }
+
+        String newAccessToken = jwtUtils.generateTokenFromUsername(username);
+        if (newAccessToken == null) {
+            log.error("Failed to generate new access token");
+            sendErrorResponse(response, "Failed to generate new access token", path);
+            return;
+        }
+
+        response.setHeader("Authorization", "Bearer " + newAccessToken);
+        authenticateUser(username, request);
+        log.debug("New access token generated and added to response header");
+
         filterChain.doFilter(request, response);
     }
 
     private String parseJwt(HttpServletRequest request) {
         String jwt = jwtUtils.getJwtFromHeader(request);
-        log.debug("AuthTokenFilter.java: {}", jwt);
+        log.debug("Extracted JWT token: {}", jwt);
         return jwt;
+    }
+
+    private String extractRefreshTokenFromCookies(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+        for (Cookie cookie : request.getCookies()) {
+            if ("refreshToken".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
+    private void authenticateUser(String username, HttpServletRequest request) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        log.debug("User authenticated successfully: {}", username);
+        log.debug("Roles from JWT: {}", userDetails.getAuthorities());
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, String message, String path) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        ResponseApi<Object> errorResponse = ResponseApiFactory.error("401", message, path);
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        response.flushBuffer();
     }
 }
