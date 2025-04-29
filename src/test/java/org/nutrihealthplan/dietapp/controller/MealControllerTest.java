@@ -4,12 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.nutrihealthplan.dietapp.config.TestSecurityConfig;
 import org.nutrihealthplan.dietapp.dto.meal.MealProductCreateResponse;
+import org.nutrihealthplan.dietapp.jwt.AuthTokenFilter;
+import org.nutrihealthplan.dietapp.jwt.JwtUtils;
 import org.nutrihealthplan.dietapp.security.SecurityConfig;
 import org.nutrihealthplan.dietapp.service.MealProductService;
+import org.nutrihealthplan.dietapp.service.RefreshTokenService;
 import org.nutrihealthplan.dietapp.utils.JsonTestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -17,13 +23,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(MealController.class)
+//@Import(TestSecurityConfig.class)
 
 class MealControllerTest {
 
@@ -35,6 +44,10 @@ class MealControllerTest {
     private ObjectMapper objectMapper;
     @MockitoBean
     private MealProductService mealProductService;
+
+//
+    @MockBean
+    private AuthTokenFilter authTokenFilter;
 
     @BeforeAll
     static void setUp(){ startTime = System.nanoTime();}
@@ -48,12 +61,14 @@ class MealControllerTest {
         System.out.println("MOCK RESPONSE: " + objectMapper.writeValueAsString(mealProductCreateResponse));
 
        when(mealProductService.createMeal(any())).thenReturn(mealProductCreateResponse);
+        //doNothing().when(authTokenFilter).doFilter(any(), any(), any());
 
        mockMvc.perform(post("/api/meals")
                .contentType(MediaType.APPLICATION_JSON)
                .with(csrf())
                .content(validRequestJson))
                .andExpect(status().isOk())
+               .andDo(print())
                .andExpect(jsonPath("$.data.mealId").exists())
                .andExpect(jsonPath("$.data.mealNumber").value(1))
                .andExpect(jsonPath("$.data.products").isArray())

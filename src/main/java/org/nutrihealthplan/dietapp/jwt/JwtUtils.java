@@ -6,6 +6,7 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
+
+
 
 @Component
 @Slf4j
@@ -26,6 +29,13 @@ public class JwtUtils {
     private int jwtExpirationMs;
     @Value("${spring.app.refreshTokenExpirationMs}")
     private int refreshTokenExpirationMs;
+
+    @PostConstruct
+    public void init() {
+        log.debug("JWT Secret: {}", jwtSecret);
+        log.debug("JWT Expiration: {}", jwtExpirationMs);
+        log.debug("Refresh Token Expiration: {}", refreshTokenExpirationMs);
+    }
 
     public String getJwtFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");

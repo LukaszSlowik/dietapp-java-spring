@@ -2,6 +2,7 @@ package org.nutrihealthplan.dietapp.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -33,27 +35,29 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
     private final RefreshTokenService refreshTokenService;
+    private static final Set<String> PUBLIC_ENDPOINTS = Set.of("/auth/signin", "/auth/register", "/auth/refresh-token");
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@Nonnull HttpServletRequest request,
+                                    @Nonnull HttpServletResponse response,
+                                    @Nonnull FilterChain filterChain) throws ServletException, IOException {
         log.debug("AuthTokenFilter called for URI: {}", request.getRequestURI());
 
         String path = request.getRequestURI();
+        if (PUBLIC_ENDPOINTS.contains(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String jwt = parseJwt(request);
-
         try {
             if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {
                 log.warn("No valid JWT token found in request");
                 sendErrorResponse(response, "Invalid or missing JWT token", request.getRequestURI());
                 return;
             }
-
             String username = jwtUtils.getUserNameFromJwtToken(jwt);
             authenticateUser(username, request);
             filterChain.doFilter(request, response);
-
         } catch (ExpiredJwtException e) {
             handleExpiredAccessToken(request, response, filterChain, path);
         } catch (JwtException | UsernameNotFoundException e) {
@@ -119,6 +123,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         }
         for (Cookie cookie : request.getCookies()) {
             if ("refreshToken".equals(cookie.getName())) {
+                cookie.setHttpOnly(true);
+                cookie.setSecure(true);
                 return cookie.getValue();
             }
         }

@@ -6,10 +6,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.nutrihealthplan.dietapp.dto.LoginRequest;
 import org.nutrihealthplan.dietapp.dto.LoginResponse;
+import org.nutrihealthplan.dietapp.dto.RegisterRequest;
 import org.nutrihealthplan.dietapp.model.ResponseApi;
 import org.nutrihealthplan.dietapp.model.ResponseApiFactory;
 import org.nutrihealthplan.dietapp.service.AuthService;
 import org.nutrihealthplan.dietapp.service.RefreshTokenService;
+import org.nutrihealthplan.dietapp.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -31,6 +33,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final RefreshTokenService refreshTokenService;
+    private final RegistrationService registrationService;
 
     @Value("${spring.app.refreshTokenExpirationMs}")
     private int refreshTokenExpirationMs;
@@ -47,6 +50,13 @@ public class AuthController {
 
         return ResponseEntity.ok(ResponseApiFactory.success(loginResponse, path));
     }
+    @PostMapping("/register")
+    public ResponseEntity<ResponseApi<String>> registerUser(@Valid @RequestBody RegisterRequest registerRequest, HttpServletRequest request,HttpServletResponse response){
+        String path = request.getServletPath();
+        registrationService.register(registerRequest);
+        return ResponseEntity.ok(ResponseApiFactory.success("User registered successfully",path));
+    }
+
     @PostMapping("/refresh-token")
     public ResponseEntity<ResponseApi<LoginResponse>> refreshToken(HttpServletRequest servletRequest, HttpServletResponse response){
         String path = servletRequest.getServletPath();
@@ -56,6 +66,8 @@ public class AuthController {
         setRefreshTokenCookie(newRefreshToken,response);
         return ResponseEntity.ok(ResponseApiFactory.success(loginResponse,path));
     }
+
+
     private void setRefreshTokenCookie(String refreshToken, HttpServletResponse response){
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",refreshToken)
                 .httpOnly(true)
