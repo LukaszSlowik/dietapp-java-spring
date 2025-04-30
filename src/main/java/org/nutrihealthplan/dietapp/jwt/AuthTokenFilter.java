@@ -29,18 +29,25 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class AuthTokenFilter extends OncePerRequestFilter {
+public class AuthTokenFilter
+        extends OncePerRequestFilter
+{
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
     private final RefreshTokenService refreshTokenService;
-    private static final Set<String> PUBLIC_ENDPOINTS = Set.of("/auth/signin", "/auth/register", "/auth/refresh-token");
+    private static final Set<String> PUBLIC_ENDPOINTS = Set.of(
+            "/auth/signin",
+            "/auth/register",
+            "/auth/refresh-token",
+            "/api/public/products"
+            );
 
     @Override
-    protected void doFilterInternal(@Nonnull HttpServletRequest request,
-                                    @Nonnull HttpServletResponse response,
-                                    @Nonnull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal( HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     FilterChain filterChain) throws ServletException, IOException {
         log.debug("AuthTokenFilter called for URI: {}", request.getRequestURI());
 
         String path = request.getRequestURI();

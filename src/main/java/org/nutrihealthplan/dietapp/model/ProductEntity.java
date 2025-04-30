@@ -23,6 +23,11 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@Table(
+        indexes = {
+                @Index(name="idx_product_name_scope", columnList = "scope, name")
+        }
+)
 public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

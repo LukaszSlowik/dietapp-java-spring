@@ -25,6 +25,7 @@ public class PublicProductController {
 
 
     @GetMapping
+
     public ResponseEntity<ResponseApi<List<PublicProductResponse>>> getPublicProducts(@ModelAttribute PublicProductFilter filter,
                                                                                       Pageable pageable,
                                                                                       HttpServletRequest request) {

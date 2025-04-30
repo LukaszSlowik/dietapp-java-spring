@@ -50,7 +50,7 @@ public class ResponseApiFactory {
         }
 
 
-
+        assert page != null;
         return new ResponseApi<>(
                 "success",
                 "200_OK",

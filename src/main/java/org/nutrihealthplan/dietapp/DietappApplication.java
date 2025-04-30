@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableCaching
-//@EnableJpaAuditing(auditorAwareRef = "customAuditorAware")
 public class DietappApplication {
 
 	public static void main(String[] args) {
