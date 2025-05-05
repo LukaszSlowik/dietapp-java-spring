@@ -3,7 +3,8 @@ package org.nutrihealthplan.dietapp.service;
 import lombok.RequiredArgsConstructor;
 import org.nutrihealthplan.dietapp.dto.RegisterRequest;
 import org.nutrihealthplan.dietapp.exceptions.AuthException;
-import org.nutrihealthplan.dietapp.model.UserEntity;
+import org.nutrihealthplan.dietapp.model.User;
+import org.nutrihealthplan.dietapp.model.enums.AuthProvider;
 import org.nutrihealthplan.dietapp.model.enums.Role;
 import org.nutrihealthplan.dietapp.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,10 +20,11 @@ public class RegistrationServiceImpl implements RegistrationService{
         if(userRepository.existsByEmail(registerRequest.getEmail())){
             throw new AuthException("User already exists with email: " + registerRequest.getEmail());
         }
-        UserEntity newUser = new UserEntity();
+        User newUser = new User();
         newUser.setEmail(registerRequest.getEmail());
         newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         newUser.setRole(Role.USER);
+        newUser.setAuthProvider(AuthProvider.LOCAL);
         userRepository.save(newUser);
     }
 }

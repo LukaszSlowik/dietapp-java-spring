@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import org.nutrihealthplan.dietapp.dto.meal.*;
 import org.nutrihealthplan.dietapp.mapper.MealProductMapper;
 import org.nutrihealthplan.dietapp.model.ProductEntity;
-import org.nutrihealthplan.dietapp.model.UserEntity;
+import org.nutrihealthplan.dietapp.model.User;
 import org.nutrihealthplan.dietapp.repository.MealProductRepository;
 import org.nutrihealthplan.dietapp.model.MealProductEntity;
 import org.nutrihealthplan.dietapp.repository.ProductRepository;
@@ -39,7 +39,7 @@ public class MealProductServiceImpl implements MealProductService {
         }
 
     LocalDate mealDate = Optional.ofNullable(request.getMealDate()).orElse(LocalDate.now());
-        UserEntity owner = resolveOwner(request.getOwnerId());
+        User owner = resolveOwner(request.getOwnerId());
     UUID mealId = UUID.randomUUID();
 
         int nextMealNumber = mealProductRepository
@@ -87,7 +87,7 @@ public class MealProductServiceImpl implements MealProductService {
     }
 
     @Override
-    public UserEntity resolveOwner(Long ownerId) {
+    public User resolveOwner(Long ownerId) {
         if(ownerId != null)
         {
 

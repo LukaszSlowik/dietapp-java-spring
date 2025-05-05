@@ -12,7 +12,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Entity
@@ -58,14 +57,14 @@ public class MealProductEntity {
 
     @CreatedBy
     @ManyToOne(fetch = FetchType.LAZY)
-    private UserEntity createdBy;
+    private User createdBy;
 
     @LastModifiedBy
     @ManyToOne(fetch = FetchType.LAZY)
-    private UserEntity modifiedBy;
+    private User modifiedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private UserEntity owner;
+    private User owner;
 
     @CreatedDate
     private Instant createdDate;

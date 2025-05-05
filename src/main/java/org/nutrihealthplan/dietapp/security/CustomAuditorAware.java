@@ -2,8 +2,7 @@ package org.nutrihealthplan.dietapp.security;
 
 
 
-import jakarta.annotation.Nullable;
-import org.nutrihealthplan.dietapp.model.UserEntity;
+import org.nutrihealthplan.dietapp.model.User;
 import org.nutrihealthplan.dietapp.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 //@Slf4j
 @Component
-public class CustomAuditorAware implements AuditorAware<UserEntity> {
+public class CustomAuditorAware implements AuditorAware<User> {
     private final UserRepository userRepository;
 
     public CustomAuditorAware(UserRepository userRepository) {
@@ -25,7 +24,7 @@ public class CustomAuditorAware implements AuditorAware<UserEntity> {
 
 
     @Override
-    public Optional<UserEntity> getCurrentAuditor() {
+    public Optional<User> getCurrentAuditor() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             return Optional.empty();

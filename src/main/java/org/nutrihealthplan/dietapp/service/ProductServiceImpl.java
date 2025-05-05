@@ -8,7 +8,6 @@ import org.nutrihealthplan.dietapp.exceptions.ProductNotCreatedException;
 import org.nutrihealthplan.dietapp.mapper.ProductMapper;
 import org.nutrihealthplan.dietapp.model.*;
 import org.nutrihealthplan.dietapp.model.enums.Scope;
-import org.nutrihealthplan.dietapp.model.enums.UnitType;
 import org.nutrihealthplan.dietapp.repository.ProductRepository;
 import org.nutrihealthplan.dietapp.repository.ProductSpecifications;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,7 +28,7 @@ import java.util.Optional;
 public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final ProductRepository productRepository;
-    private final AuditorAware<UserEntity> auditorAware;
+    private final AuditorAware<User> auditorAware;
 
     public List<ProductCreateResponse> createProduct(
             List<ProductCreateRequest> requests) {
@@ -41,7 +40,7 @@ public class ProductServiceImpl implements ProductService {
         try {
 
             Scope scope = request.getScope() != null ? request.getScope() : Scope.PRIVATE;
-            Optional<UserEntity> owner = auditorAware.getCurrentAuditor();
+            Optional<User> owner = auditorAware.getCurrentAuditor();
             if(owner.isEmpty())
             {
                             throw new IllegalStateException("No authenticated user found");

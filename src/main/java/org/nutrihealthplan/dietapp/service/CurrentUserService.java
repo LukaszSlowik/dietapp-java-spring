@@ -1,9 +1,9 @@
 package org.nutrihealthplan.dietapp.service;
 
-import org.nutrihealthplan.dietapp.model.UserEntity;
+import org.nutrihealthplan.dietapp.model.User;
 
 public interface CurrentUserService {
-    UserEntity getCurrentUser();
+    User getCurrentUser();
 
     Long getCurrentUserId();
 }

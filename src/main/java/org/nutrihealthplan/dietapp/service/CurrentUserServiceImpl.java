@@ -1,7 +1,7 @@
 package org.nutrihealthplan.dietapp.service;
 
 import lombok.AllArgsConstructor;
-import org.nutrihealthplan.dietapp.model.UserEntity;
+import org.nutrihealthplan.dietapp.model.User;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Service;
 
@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class CurrentUserServiceImpl implements  CurrentUserService{
 
-    private final AuditorAware<UserEntity> auditorAware;
+    private final AuditorAware<User> auditorAware;
 
     @Override
-    public UserEntity getCurrentUser() {
+    public User getCurrentUser() {
         return auditorAware.getCurrentAuditor()
                 .orElseThrow(() -> new IllegalStateException("No authenticated user found"));
     }

@@ -5,7 +5,10 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import lombok.RequiredArgsConstructor;
+import org.nutrihealthplan.dietapp.dto.ProductBasicInfoResponse;
 import org.nutrihealthplan.dietapp.dto.PublicProductResponse;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -26,35 +29,59 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class RedisConfig {
 
-    private final ObjectMapper objectMapper;
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
 
-@Bean
-    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory){
+        ObjectMapper redisMapper = new ObjectMapper();
+        redisMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
 
-    Jackson2JsonRedisSerializer<Object> serializerDefault = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
-    JavaType publicProductResponseListType = objectMapper.getTypeFactory().constructCollectionType(List.class, PublicProductResponse.class);
-    Jackson2JsonRedisSerializer<List<PublicProductResponse>> publicProductResponseListSerializer =
-            new Jackson2JsonRedisSerializer<>(objectMapper, publicProductResponseListType);
+        // Wyłączenie zapisywania dat jako timestamp
+        redisMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-    RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-            .entryTtl(Duration.ofMinutes(10))
-            .disableCachingNullValues()
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializerDefault));
-    RedisCacheConfiguration publicProductsListConfig = defaultConfig
-            .entryTtl(Duration.ofHours(2))
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(publicProductResponseListSerializer));
+        // Konfiguracja walidatora typów dla obiektów w org.nutrihealthplan
+//        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+//                .allowIfSubType("org.nutrihealthplan") // Umożliwia deserializację tylko podtypów z tego pakietu
+//                .build();
+//        redisMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL); // Aktywacja polimorficznego typowania
 
+        // Domyślny serializator dla ogólnych obiektów
+        Jackson2JsonRedisSerializer<Object> serializerDefault = new Jackson2JsonRedisSerializer<>(redisMapper, Object.class);
 
-    Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+        // Typy dla list obiektów PublicProductResponse i ProductBasicInfoResponse
+        JavaType publicProductResponseListType = redisMapper.getTypeFactory().constructCollectionType(List.class, PublicProductResponse.class);
+        JavaType productResponseListType = redisMapper.getTypeFactory().constructCollectionType(List.class, ProductBasicInfoResponse.class);
 
+        // Serializatory dla list obiektów
+        Jackson2JsonRedisSerializer<List<PublicProductResponse>> publicProductResponseListSerializer =
+                new Jackson2JsonRedisSerializer<>(redisMapper, publicProductResponseListType);
+        Jackson2JsonRedisSerializer<List<ProductBasicInfoResponse>> productResponseListSerializer =
+                new Jackson2JsonRedisSerializer<>(redisMapper, productResponseListType);
 
-    cacheConfigurations.put("globalProductListCache", publicProductsListConfig);
+        // Domyślna konfiguracja cache
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(10)) // Czas życia cache
+                .disableCachingNullValues() // Wyłączenie cachowania wartości null
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializerDefault));
 
-    return RedisCacheManager.builder(connectionFactory)
-            .cacheDefaults(defaultConfig)
-            .withInitialCacheConfigurations(cacheConfigurations)
-            .transactionAware()
-            .build();
-}
+        // Dostosowanie konfiguracji dla konkretnych cache
+        RedisCacheConfiguration publicProductsListConfig = defaultConfig
+                .entryTtl(Duration.ofHours(2)) // Czas życia cache dla produktów
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(publicProductResponseListSerializer));
 
+        RedisCacheConfiguration productListConfig = defaultConfig
+                .entryTtl(Duration.ofHours(2)) // Czas życia cache dla podstawowych informacji produktów
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(productResponseListSerializer));
+
+        // Mapowanie nazw cache do konfiguracji
+        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+        cacheConfigurations.put("globalProductListCache", publicProductsListConfig);
+        cacheConfigurations.put("productListCache", productListConfig);
+
+        // Tworzenie RedisCacheManager
+        return RedisCacheManager.builder(connectionFactory)
+                .cacheDefaults(defaultConfig)
+                .withInitialCacheConfigurations(cacheConfigurations)
+                .transactionAware()
+                .build();
+    }
 }

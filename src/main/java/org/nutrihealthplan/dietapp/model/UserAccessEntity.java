@@ -12,10 +12,10 @@ public class UserAccessEntity {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private UserEntity user;
+    private User user;
     @ManyToOne
     @JoinColumn(name = "target_user_id")
-    private UserEntity target;
+    private User target;
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "user_access_permissions",

@@ -48,16 +48,16 @@ public class ProductEntity {
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<UserEntity> ownerGroup = new HashSet<>();
+    private Set<User> ownerGroup = new HashSet<>();
     @CreatedBy
     @ManyToOne(fetch = FetchType.LAZY)
-    private UserEntity createdBy;
+    private User createdBy;
     @LastModifiedBy
     @ManyToOne(fetch = FetchType.LAZY)
-    private UserEntity modifiedBy;
+    private User modifiedBy;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = true)
-    private UserEntity owner;
+    private User owner;
     @CreatedDate
     private Instant createdDate;
     @LastModifiedDate

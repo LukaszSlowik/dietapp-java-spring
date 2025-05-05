@@ -3,7 +3,7 @@ package org.nutrihealthplan.dietapp.security;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import org.nutrihealthplan.dietapp.model.UserEntity;
+import org.nutrihealthplan.dietapp.model.User;
 import org.nutrihealthplan.dietapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -37,7 +37,7 @@ public class CustomAuditorAwareTest {
         //given
         //SecurityContextHolder.clearContext();
         //when
-        Optional<UserEntity> result = auditorAware.getCurrentAuditor();
+        Optional<User> result = auditorAware.getCurrentAuditor();
         //then
         assertThat(result).isEmpty();
     }
@@ -46,7 +46,7 @@ public class CustomAuditorAwareTest {
     void shouldReturnUserWhenAuthenticated(){
         //given
         String email = "test@Example.com";
-        UserEntity user = new UserEntity();
+        User user = new User();
         user.setEmail(email);
 //        Authentication authentication = mock(Authentication.class);
 //        when(authentication.isAuthenticated()).thenReturn(true);
@@ -57,7 +57,7 @@ public class CustomAuditorAwareTest {
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
 
         //when
-        Optional<UserEntity> result = auditorAware.getCurrentAuditor();
+        Optional<User> result = auditorAware.getCurrentAuditor();
         //then
 
         assertThat(result)

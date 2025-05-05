@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -37,24 +38,28 @@ public class AuthTokenFilter
     private final UserDetailsService userDetailsService;
     private final ObjectMapper objectMapper;
     private final RefreshTokenService refreshTokenService;
-    private static final Set<String> PUBLIC_ENDPOINTS = Set.of(
-            "/auth/signin",
-            "/auth/register",
-            "/auth/refresh-token",
-            "/api/public/products"
-            );
 
+    private final AntPathRequestMatcher[] excludedMatchers = {
+            new AntPathRequestMatcher("/h2-console/**"),
+            new AntPathRequestMatcher("/auth/**"),
+            new AntPathRequestMatcher("/api/public/**"),
+            new AntPathRequestMatcher("/login/**"),
+            new AntPathRequestMatcher("/oauth2/**"),
+            new AntPathRequestMatcher("/favicon.ico")
+    };
     @Override
     protected void doFilterInternal( HttpServletRequest request,
                                      HttpServletResponse response,
                                      FilterChain filterChain) throws ServletException, IOException {
         log.debug("AuthTokenFilter called for URI: {}", request.getRequestURI());
-
-        String path = request.getRequestURI();
-        if (PUBLIC_ENDPOINTS.contains(path)) {
-            filterChain.doFilter(request, response);
-            return;
+        for (AntPathRequestMatcher matcher : excludedMatchers) {
+            if (matcher.matches(request)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
+        String path = request.getRequestURI();
+
         String jwt = parseJwt(request);
         try {
             if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {

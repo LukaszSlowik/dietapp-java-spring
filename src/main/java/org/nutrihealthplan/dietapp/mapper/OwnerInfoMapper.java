@@ -1,10 +1,9 @@
 package org.nutrihealthplan.dietapp.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import org.nutrihealthplan.dietapp.dto.OwnerInfo;
-import org.nutrihealthplan.dietapp.model.UserEntity;
+import org.nutrihealthplan.dietapp.model.User;
 
 @Mapper(
         componentModel = "spring",
@@ -12,5 +11,5 @@ import org.nutrihealthplan.dietapp.model.UserEntity;
 )
 public interface OwnerInfoMapper {
 
-    OwnerInfo toDto(UserEntity entity);
+    OwnerInfo toDto(User entity);
 }

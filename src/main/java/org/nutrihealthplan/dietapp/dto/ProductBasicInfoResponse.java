@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.nutrihealthplan.dietapp.model.UserEntity;
 
 import java.util.List;
 
